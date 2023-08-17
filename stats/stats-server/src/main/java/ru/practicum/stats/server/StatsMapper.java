@@ -8,11 +8,11 @@ import ru.practicum.stats.server.model.HitStats;
 
 @UtilityClass
 public class StatsMapper {
-    public static HitDto toHitDto(Hit hit) {
+    public HitDto toHitDto(Hit hit) {
         return new HitDto(hit.getApp(), hit.getUri(), hit.getIp(), hit.getTimestamp());
     }
 
-    public static Hit toHit(HitDto hitDto) {
+    public Hit toHit(HitDto hitDto) {
         Hit hit = new Hit();
         hit.setApp(hitDto.getApp());
         hit.setUri(hitDto.getUri());
@@ -21,11 +21,11 @@ public class StatsMapper {
         return hit;
     }
 
-    public static HitStatsDto toHitStatsDto(HitStats hitStats) {
+    public HitStatsDto toHitStatsDto(HitStats hitStats) {
         return new HitStatsDto(hitStats.getApp(), hitStats.getUri(), hitStats.getHits());
     }
 
-    public static HitStats toHitStats(HitStatsDto hitStatsDto) {
+    public HitStats toHitStats(HitStatsDto hitStatsDto) {
         return new HitStats(hitStatsDto.getApp(), hitStatsDto.getUri(), hitStatsDto.getHits());
     }
 }

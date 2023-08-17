@@ -36,8 +36,7 @@ public class StatsController {
     public List<HitStatsDto> getStats(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                       @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                       @RequestParam(required = false) List<String> uris,
-                                      @RequestParam(defaultValue = "false") boolean unique)
-            throws IntervalValidationException {
+                                      @RequestParam(defaultValue = "false") boolean unique) {
         log.info(this.getClass().getSimpleName() + ": Get: start: {}, end: {}, uris: {}, unique: {}", start, end,
                 uris, unique);
         if (start.isAfter(end)) {
