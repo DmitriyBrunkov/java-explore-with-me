@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.stats.dto.HitDto;
 import ru.practicum.stats.dto.HitStatsDto;
-import ru.practicum.stats.server.exception.IntervalValidationException;
+import ru.practicum.stats.server.exception.model.IntervalValidationException;
 import ru.practicum.stats.server.service.StatsService;
 
 import javax.validation.Valid;
