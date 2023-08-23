@@ -7,17 +7,21 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class HitDto {
     @NotBlank
-    private String app;
+    String app;
     @NotBlank
-    private String uri;
+    String uri;
     @NotBlank
-    private String ip;
+    String ip;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
+    @Builder.Default()
+    LocalDateTime timestamp = LocalDateTime.now();
 }
