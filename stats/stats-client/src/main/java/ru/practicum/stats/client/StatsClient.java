@@ -19,6 +19,7 @@ import java.util.List;
 public class StatsClient {
 
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
     private final WebClient webClient;
 
     public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -31,9 +32,9 @@ public class StatsClient {
         return webClient.get()
                 .uri(UriComponentsBuilder
                         .fromUriString("/stats")
-                        .queryParam("start", start.format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)))
-                        .queryParam("end", end.format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)))
-                        .queryParam("uris", uris)
+                        .queryParam("start", start.format(DATE_TIME_FORMATTER))
+                        .queryParam("end", end.format(DATE_TIME_FORMATTER))
+                        .queryParam("uris", String.join(", ", uris))
                         .queryParam("unique", unique)
                         .build().toUriString())
                 .retrieve()

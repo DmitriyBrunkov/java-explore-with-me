@@ -1,6 +1,6 @@
 package ru.practicum.service.category.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.service.category.model.Category;
@@ -11,17 +11,14 @@ import ru.practicum.service.validation.PageableValidation;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
-    @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
     @Override
     public Category getCategory(Long categoryId) {
-        return categoryRepository.findById(categoryId).orElseThrow(() -> new  ObjectNotFoundException("Category: " + categoryId + " not found"));
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ObjectNotFoundException("Category: " + categoryId + " not found"));
     }
 
     @Override
@@ -31,7 +28,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long categoryId) {
-        getCategory(categoryId);
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new ObjectNotFoundException("Category: " + categoryId + " not found");
+        }
         categoryRepository.deleteById(categoryId);
     }
 

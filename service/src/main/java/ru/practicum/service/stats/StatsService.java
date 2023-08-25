@@ -1,6 +1,7 @@
 package ru.practicum.service.stats;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.stats.client.StatsClient;
@@ -9,32 +10,34 @@ import ru.practicum.stats.dto.HitStatsDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class StatsService {
-    private static final String APP = "main-service";
+    @Value("${service.app-name}")
+    private String app;
     private static final String URI_PREFIX = "/events";
     private final StatsClient statsClient;
 
-    public void postHit(Long eventId) {
+    public void postHit(Long eventId, String ip) {
         String uri = URI_PREFIX + (eventId == null ? "" : "/" + eventId);
         statsClient.hitStat(HitDto.builder()
-                .app(APP)
-                .ip("127.0.0.1")
+                .app(app)
+                .ip(ip)
                 .uri(uri)
                 .build());
     }
 
-    public Long getHitsCount(Long eventId) {
+    public Long getHitsCount(Long eventId, LocalDateTime createdOn) {
         List<String> uris = List.of("/events/" + eventId);
         ResponseEntity<List<HitStatsDto>> entity = statsClient.getStat(
-                LocalDateTime.of(1970, 1, 1, 1, 1),
-                LocalDateTime.of(3970, 1, 1, 1, 1),
+                createdOn,
+                LocalDateTime.now(),
                 uris,
                 true);
 
-        if (entity.getBody().isEmpty()) {
+        if (Objects.requireNonNull(entity.getBody()).isEmpty()) {
             return 0L;
         }
         return entity.getBody().stream().mapToLong(HitStatsDto::getHits).sum();

@@ -1,18 +1,20 @@
 package ru.practicum.service.request.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
+import org.hibernate.proxy.HibernateProxy;
 import ru.practicum.service.event.model.Event;
 import ru.practicum.service.request.enums.RequestStatus;
 import ru.practicum.service.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "requests")
 @NoArgsConstructor
@@ -33,4 +35,24 @@ public class Request {
     @Generated(GenerationTime.INSERT)
     @Column(insertable = false)
     private LocalDateTime created;
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer()
+                .getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer()
+                .getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Request request = (Request) o;
+        return getId() != null && Objects.equals(getId(), request.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer()
+                .getPersistentClass()
+                .hashCode() : getClass().hashCode();
+    }
 }

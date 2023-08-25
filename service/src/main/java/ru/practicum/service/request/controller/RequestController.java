@@ -1,47 +1,43 @@
 package ru.practicum.service.request.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.request.RequestMapper;
 import ru.practicum.service.request.dto.ParticipationRequestDto;
 import ru.practicum.service.request.service.RequestService;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users/{userId}/requests")
 @Slf4j
+@RequiredArgsConstructor
+@Validated
 public class RequestController {
     private final RequestService requestService;
 
-    @Autowired
-    public RequestController(RequestService requestService) {
-        this.requestService = requestService;
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto addRequest(@PathVariable @NotNull @PositiveOrZero Long userId,
-                                              @RequestParam @NotNull @PositiveOrZero Long eventId) {
-        log.info(this.getClass().getSimpleName() + ": POST: userId: {} eventId: {}", userId, eventId);
+    public ParticipationRequestDto addRequest(@PathVariable @Positive Long userId, @RequestParam @Positive Long eventId) {
+        log.info("{}: POST: userId: {} eventId: {}", this.getClass().getSimpleName(), userId, eventId);
         return RequestMapper.toParticipationRequestDto(requestService.addRequest(userId, eventId));
     }
 
     @GetMapping
-    public List<ParticipationRequestDto> getUserRequests(@PathVariable @NotNull @PositiveOrZero Long userId) {
-        log.info(this.getClass().getSimpleName() + ": GET: userId: {} ", userId);
-        return requestService.getUserRequests(userId).stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
+    public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Long userId) {
+        log.info("{}: GET: userId: {} ", this.getClass().getSimpleName(), userId);
+        return requestService.getUserRequests(userId).stream().map(RequestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/{requestId}/cancel")
-    public ParticipationRequestDto cancelRequest(@PathVariable @PositiveOrZero Long userId,
-                                                 @PathVariable @PositiveOrZero Long requestId) {
-        log.info(this.getClass().getSimpleName() + ": PATCH: userId: {} requestId: {}", userId, requestId);
+    public ParticipationRequestDto cancelRequest(@PathVariable @Positive Long userId, @PathVariable @Positive Long requestId) {
+        log.info("{}: PATCH: userId: {} requestId: {}", this.getClass().getSimpleName(), userId, requestId);
         return RequestMapper.toParticipationRequestDto(requestService.cancelRequest(userId, requestId));
     }
 }

@@ -1,6 +1,6 @@
 package ru.practicum.service.user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.service.exception.model.ObjectNotFoundException;
@@ -12,14 +12,10 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public User addUser(User user) {
@@ -34,7 +30,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("User id: " + userId + " not found"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User id: " + userId + " not found"));
     }
 
     @Override

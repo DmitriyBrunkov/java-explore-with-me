@@ -12,7 +12,7 @@ import java.util.Set;
 public class NewCompilationDto {
     private Long id;
     private Set<Long> events = new HashSet<>();
-    private Boolean pinned = false;
+    private boolean pinned = false;
     @NotBlank(groups = ValidateException.OnCreate.class)
     @Size(min = 1, max = 50, groups = {ValidateException.OnCreate.class, ValidateException.OnUpdate.class})
     private String title;

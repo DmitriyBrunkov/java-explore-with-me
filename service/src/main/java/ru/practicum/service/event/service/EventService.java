@@ -1,8 +1,12 @@
 package ru.practicum.service.event.service;
 
+import ru.practicum.service.event.dto.UpdateEventAdminRequest;
+import ru.practicum.service.event.dto.UpdateEventUserRequest;
 import ru.practicum.service.event.enums.EventState;
 import ru.practicum.service.event.enums.SortType;
 import ru.practicum.service.event.model.Event;
+import ru.practicum.service.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.service.request.dto.EventRequestStatusUpdateResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +22,9 @@ public interface EventService {
 
     Event getEvent(Long userId, Long eventId);
 
-    Event updateEvent(Event event);
+    Event updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
+
+    Event updateEventUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
 
     List<Event> getAllEventsForAdmin(Set<Long> users,
                                      Set<EventState> states,
@@ -32,10 +38,14 @@ public interface EventService {
                                    Boolean paid,
                                    LocalDateTime rangeStart,
                                    LocalDateTime rangeEnd,
+                                   Boolean onlyAvailable,
                                    SortType sort,
-                                   int from, int size);
+                                   int from, int size, String ip);
 
     Event getEventForPub(Long eventId);
 
     Set<Event> getEvents(Set<Long> ids);
+
+    EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
+                                                       EventRequestStatusUpdateRequest updateRequest);
 }

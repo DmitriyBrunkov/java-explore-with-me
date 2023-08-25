@@ -22,21 +22,20 @@ public class EventMapper {
                          LocalDateTime createdOn, EventState state, NewEventDto newEventDto) {
         return new Event(null, newEventDto.getAnnotation(), category, createdOn,
                 newEventDto.getDescription(), newEventDto.getEventDate(), initiator, location,
-                newEventDto.getPaid(), newEventDto.getParticipantLimit(), null, newEventDto.getRequestModeration(),
+                newEventDto.isPaid(), newEventDto.getParticipantLimit(), null, newEventDto.isRequestModeration(),
                 state, newEventDto.getTitle());
     }
 
-    public EventFullDto toEventFullDto(Long confirmedRequests, Long views, Event event) {
+    public EventFullDto toEventFullDto(Long views, Event event) {
         return new EventFullDto(event.getAnnotation(), CategoryMapper.toCategoryDto(event.getCategory()),
-                confirmedRequests, event.getCreatedOn(), event.getDescription(), event.getEventDate(), event.getId(),
+                event.getCreatedOn(), event.getDescription(), event.getEventDate(), event.getId(),
                 UserMapper.toUserShortDto(event.getInitiator()), LocationMapper.toLocationDto(event.getLocation()),
                 event.getPaid(), event.getParticipantLimit(), event.getPublishedOn(), event.getRequestModeration(),
                 event.getState(), event.getTitle(), views);
     }
 
-    public EventShortDto toEventShortDto(Long confirmedRequests, Long views, Event event) {
+    public EventShortDto toEventShortDto(Long views, Event event) {
         return new EventShortDto(event.getAnnotation(), CategoryMapper.toCategoryDto(event.getCategory()),
-                confirmedRequests, event.getEventDate(), event.getId(),
-                UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views);
+                event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views);
     }
 }

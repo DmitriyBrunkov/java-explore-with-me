@@ -1,6 +1,6 @@
 package ru.practicum.service.compilation.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.service.compilation.model.Compilation;
@@ -11,13 +11,9 @@ import ru.practicum.service.validation.PageableValidation;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
-
-    @Autowired
-    public CompilationServiceImpl(CompilationRepository compilationRepository) {
-        this.compilationRepository = compilationRepository;
-    }
 
     @Override
     public Compilation addCompilation(Compilation compilation) {
@@ -51,7 +47,10 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public List<Compilation> getCompilations(Boolean pinned, Integer from, Integer size) {
         Pageable pageable = PageableValidation.validatePageable(from, size);
-        return compilationRepository.findAllByPinned(pinned, pageable);
+        if (pinned != null) {
+            return compilationRepository.findAllByPinned(pinned, pageable);
+        }
+        return compilationRepository.findAll(pageable).toList();
     }
 
     @Override

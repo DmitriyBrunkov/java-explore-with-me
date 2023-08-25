@@ -19,5 +19,5 @@ public interface RequestService {
 
     Request getRequest(Long requestId);
 
-    Request updateRequest(Request request);
+    void updateRequest(Request request);
 }

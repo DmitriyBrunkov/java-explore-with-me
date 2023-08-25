@@ -12,7 +12,7 @@ import java.util.Set;
 @UtilityClass
 public class CompilationMapper {
     public Compilation toCompilation(Set<Event> events, NewCompilationDto newCompilationDto) {
-        return new Compilation(newCompilationDto.getId(), newCompilationDto.getPinned(), newCompilationDto.getTitle(),
+        return new Compilation(newCompilationDto.getId(), newCompilationDto.isPinned(), newCompilationDto.getTitle(),
                 events);
     }
 

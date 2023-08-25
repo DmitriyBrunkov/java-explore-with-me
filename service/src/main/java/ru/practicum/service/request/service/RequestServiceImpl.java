@@ -1,10 +1,10 @@
 package ru.practicum.service.request.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.service.event.enums.EventState;
 import ru.practicum.service.event.model.Event;
-import ru.practicum.service.event.service.EventService;
+import ru.practicum.service.event.repository.EventRepository;
 import ru.practicum.service.exception.model.ObjectNotFoundException;
 import ru.practicum.service.exception.model.RequestValidationException;
 import ru.practicum.service.request.enums.RequestStatus;
@@ -13,20 +13,27 @@ import ru.practicum.service.request.repository.RequestRepository;
 import ru.practicum.service.user.model.User;
 import ru.practicum.service.user.service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
     private final UserService userService;
-    private final EventService eventService;
+    private final EventRepository eventRepository;
 
-    @Autowired
-    public RequestServiceImpl(RequestRepository requestRepository, UserService userService, EventService eventService) {
-        this.requestRepository = requestRepository;
-        this.userService = userService;
-        this.eventService = eventService;
+    @Override
+    public Long getConfirmedRequests(Long eventId) {
+        List<Request> requestList = requestRepository.findAllByStatus(RequestStatus.CONFIRMED);
+        Map<Long, Long> confirmedRequests = new HashMap<>();
+        for (Request request : requestList) {
+            confirmedRequests.put(request.getEvent().getId(),
+                    confirmedRequests.getOrDefault(request.getEvent().getId(), 0L) + 1);
+        }
+        return confirmedRequests.getOrDefault(eventId, 0L);
     }
 
     @Override
@@ -48,11 +55,6 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Long getConfirmedRequests(Long eventId) {
-        return requestRepository.countAllByStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId);
-    }
-
-    @Override
     public List<Request> getRequests(Long eventId) {
         return requestRepository.findAllByEvent_Id(eventId);
     }
@@ -69,13 +71,14 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Request updateRequest(Request request) {
-        return requestRepository.save(request);
+    public void updateRequest(Request request) {
+        requestRepository.save(request);
     }
 
     private Request buildRequest(Long userId, Long eventId) {
         User user = userService.getUser(userId);
-        Event event = eventService.getEvent(eventId);
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId +
+                " not found"));
 
         if (event.getInitiator().equals(user)) {
             throw new RequestValidationException("Event initiator cannot add a request to participate in his own " +
@@ -86,7 +89,7 @@ public class RequestServiceImpl implements RequestService {
             throw new RequestValidationException("Can't participate in an unpublished event");
         }
 
-        Long confirmedRequests = getConfirmedRequests(eventId);
+        Long confirmedRequests =  getConfirmedRequests(eventId);
 
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= confirmedRequests) {
             throw new RequestValidationException("Event has reached the limit of requests for participation");
