@@ -10,12 +10,14 @@ import ru.practicum.service.compilation.model.Compilation;
 import ru.practicum.service.compilation.service.CompilationService;
 import ru.practicum.service.event.EventMapper;
 import ru.practicum.service.event.dto.EventShortDto;
+import ru.practicum.service.event.model.Event;
 import ru.practicum.service.request.service.RequestService;
 import ru.practicum.service.stats.StatsService;
 
 import javax.validation.constraints.Positive;
-import java.util.List;
-import java.util.Set;
+import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,18 +32,25 @@ public class PubCompilationController {
 
     @GetMapping
     public List<CompilationDto> getAllCompilations(@RequestParam(required = false) Boolean pinned,
-                                                   @RequestParam(defaultValue = "0", required = false) int from,
-                                                   @RequestParam(defaultValue = "10", required = false) int size) {
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                   @RequestParam(defaultValue = "10") @Positive int size) {
         log.info("{}: GET: ALL: pinned: {} from: {} size: {}", this.getClass().getSimpleName(), pinned, from, size);
-
-        return compilationService.getCompilations(pinned, from, size).stream().map(compilation -> {
+        List<Compilation> compilations = compilationService.getCompilations(pinned, from, size);
+        Set<Event> events = new HashSet<>();
+        compilations.forEach(compilation -> events.addAll(compilation.getEvents()));
+        Map<Long, Long> hitsCount;
+        if (!events.isEmpty()) {
+            requestService.updateConfirmedRequests();
+            Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
+            events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
+            hitsCount = statsService.getHitsCount(eventsWithDate);
+        } else {
+            hitsCount = new HashMap<>();
+        }
+        return compilations.stream().map(compilation -> {
             Set<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                    .map(event -> {
-                        EventShortDto eventShortDto =
-                                EventMapper.toEventShortDto(statsService.getHitsCount(event.getId(), event.getCreatedOn()), event);
-                        eventShortDto.setConfirmedRequests(requestService.getConfirmedRequests(eventShortDto.getId()));
-                        return eventShortDto;
-                    })
+                    .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
+                            hitsCount.get(event.getId()), event))
                     .collect(Collectors.toSet());
             return CompilationMapper.toCompilationDto(eventShortDtos, compilation);
         }).collect(Collectors.toList());
@@ -51,13 +60,20 @@ public class PubCompilationController {
     public CompilationDto getCompilation(@PathVariable @Positive Long compId) {
         log.info("{}: GET: compId: {}", this.getClass().getSimpleName(), compId);
         Compilation compilation = compilationService.getCompilation(compId);
+        Set<Event> events;
+        Map<Long, Long> hitsCount;
+        if (!compilation.getEvents().isEmpty()) {
+            events = compilation.getEvents();
+            requestService.updateConfirmedRequests();
+            Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
+            events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
+            hitsCount = statsService.getHitsCount(eventsWithDate);
+        } else {
+            events = new HashSet<>();
+            hitsCount = new HashMap<>();
+        }
         return CompilationMapper.toCompilationDto(compilation.getEvents().stream()
-                .map(event -> {
-                    EventShortDto eventShortDto =
-                            EventMapper.toEventShortDto(statsService.getHitsCount(event.getId(), event.getCreatedOn()), event);
-                    eventShortDto.setConfirmedRequests(requestService.getConfirmedRequests(eventShortDto.getId()));
-                    return eventShortDto;
-                })
+                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()), hitsCount.get(event.getId()), event))
                 .collect(Collectors.toSet()), compilation);
     }
 }

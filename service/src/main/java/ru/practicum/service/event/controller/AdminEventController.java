@@ -11,15 +11,14 @@ import ru.practicum.service.event.dto.UpdateEventAdminRequest;
 import ru.practicum.service.event.enums.EventState;
 import ru.practicum.service.event.model.Event;
 import ru.practicum.service.event.service.EventService;
-import ru.practicum.service.exception.model.EventDateTimeException;
 import ru.practicum.service.request.service.RequestService;
 import ru.practicum.service.stats.StatsService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.service.event.model.DateTimeFormat.PATTERN;
@@ -34,7 +33,6 @@ public class AdminEventController {
     private final StatsService statsService;
     private final RequestService requestService;
 
-
     @GetMapping
     public List<EventFullDto> getAllEvents(@RequestParam(required = false) Set<Long> users,
                                            @RequestParam(required = false) Set<EventState> states,
@@ -45,8 +43,8 @@ public class AdminEventController {
                                            @RequestParam(required = false)
                                            @DateTimeFormat(pattern = PATTERN)
                                            LocalDateTime rangeEnd,
-                                           @RequestParam(defaultValue = "0", required = false) int from,
-                                           @RequestParam(defaultValue = "10", required = false) int size) {
+                                           @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                           @RequestParam(defaultValue = "10") @Positive int size) {
         log.info("{}: GET: ALL: users: {} states: {} categories: {} rangeStart: {} " +
                         "rangeEnd: {} from: {} size: {}", this.getClass().getSimpleName(), users, states, categories,
                 rangeStart, rangeEnd, from, size);
@@ -56,16 +54,20 @@ public class AdminEventController {
         if (rangeEnd == null) {
             rangeEnd = LocalDateTime.now().plusYears(30);
         }
-        if (rangeEnd.isBefore(rangeStart)) {
-            throw new EventDateTimeException("Start must be before end");
+        Set<Event> events = new HashSet<>(eventService.getAllEventsForAdmin(users, states, categories, rangeStart, rangeEnd, from,
+                size));
+        Map<Long, Long> hitsCount;
+        if (!events.isEmpty()) {
+            requestService.updateConfirmedRequests();
+            Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
+            events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
+            hitsCount = statsService.getHitsCount(eventsWithDate);
+        } else {
+            hitsCount = new HashMap<>();
         }
-        return eventService.getAllEventsForAdmin(users, states, categories, rangeStart, rangeEnd, from, size).stream()
-                .map(event -> {
-                    EventFullDto eventFullDto = EventMapper.toEventFullDto(statsService.getHitsCount(event.getId(), event.getCreatedOn()),
-                            event);
-                    eventFullDto.setConfirmedRequests(requestService.getConfirmedRequests(eventFullDto.getId()));
-                    return eventFullDto;
-                })
+        return events.stream()
+                .map(event -> EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()),
+                        hitsCount.get(event.getId()), event))
                 .collect(Collectors.toList());
     }
 
@@ -76,6 +78,7 @@ public class AdminEventController {
                 .getSimpleName(), eventId, updateEventAdminRequest);
         Event event = eventService.updateEventAdmin(eventId, updateEventAdminRequest);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        return EventMapper.toEventFullDto(views, event);
+        requestService.updateConfirmedRequests();
+        return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 }

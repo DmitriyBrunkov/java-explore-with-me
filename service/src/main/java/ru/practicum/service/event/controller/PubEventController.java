@@ -18,8 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.service.event.model.DateTimeFormat.PATTERN;
@@ -42,22 +41,27 @@ public class PubEventController {
                                             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime rangeEnd,
                                             @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                             @RequestParam(defaultValue = "EVENT_DATE") SortType sort,
-                                            @RequestParam(defaultValue = "0", required = false) int from,
-                                            @RequestParam(defaultValue = "10", required = false) int size, HttpServletRequest request) {
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                            @RequestParam(defaultValue = "10") @Positive int size,
+                                            HttpServletRequest request) {
         log.info("{}: GET: ALL: text: {} categories: {} paid: {} rangeStart: {} " +
                         "rangeEnd: {} onlyAvailable: {} sort: {} from: {} size: {}", this.getClass().getSimpleName(),
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+        Set<Event> events = new HashSet<>(eventService.getAllEventsForPub(text, categories, paid, rangeStart, rangeEnd,
+                onlyAvailable, sort, from, size, request.getRemoteAddr()));
+        Map<Long, Long> hitsCount;
+        if (!events.isEmpty()) {
+            requestService.updateConfirmedRequests();
+            Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
+            events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
+            hitsCount = statsService.getHitsCount(eventsWithDate);
+        } else {
+            hitsCount = new HashMap<>();
+        }
 
-        List<EventShortDto> resultEventShortList = eventService.getAllEventsForPub(text, categories, paid, rangeStart, rangeEnd,
-                        onlyAvailable, sort, from, size, request.getRemoteAddr()).stream()
-                .map(event -> {
-                    EventShortDto eventShortDto =
-                            EventMapper.toEventShortDto(statsService.getHitsCount(event.getId(), event.getCreatedOn()), event);
-                    eventShortDto.setConfirmedRequests(requestService.getConfirmedRequests(eventShortDto.getId()));
-                    return eventShortDto;
-                })
+        List<EventShortDto> resultEventShortList = events.stream()
+                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()), hitsCount.get(event.getId()), event))
                 .collect(Collectors.toList());
-
         if (sort.equals(SortType.VIEWS)) {
             resultEventShortList.sort((o1, o2) -> Math.toIntExact(o2.getViews() - o1.getViews()));
         }
@@ -70,6 +74,7 @@ public class PubEventController {
         statsService.postHit(id, request.getRemoteAddr());
         Event event = eventService.getEventForPub(id);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        return EventMapper.toEventFullDto(views, event);
+        requestService.updateConfirmedRequests();
+        return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 }

@@ -16,8 +16,6 @@ public interface EventService {
 
     Event addEvent(Event event);
 
-    Event getEvent(Long eventId);
-
     List<Event> getEvents(Long userId, int from, int size);
 
     Event getEvent(Long userId, Long eventId);
@@ -48,4 +46,6 @@ public interface EventService {
 
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
                                                        EventRequestStatusUpdateRequest updateRequest);
+
+    boolean exist(long eventId);
 }

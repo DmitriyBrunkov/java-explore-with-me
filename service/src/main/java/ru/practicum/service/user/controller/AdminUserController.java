@@ -32,8 +32,8 @@ public class AdminUserController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) Set<Long> ids,
-                                  @RequestParam(defaultValue = "0", required = false) Integer from,
-                                  @RequestParam(defaultValue = "10", required = false) Integer size) {
+                                  @RequestParam(defaultValue = "0") Integer from,
+                                  @RequestParam(defaultValue = "10") Integer size) {
         log.info("{}: GET: ALL: ids: {} from: {} size: {}", this.getClass().getSimpleName(), ids, from, size);
         return userService.getUsers(ids, from, size).stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }

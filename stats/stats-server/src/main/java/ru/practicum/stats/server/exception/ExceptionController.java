@@ -15,7 +15,7 @@ public class ExceptionController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIntervalValidationException(final IntervalValidationException e) {
-        log.error(e.getMessage());
+        log.error("{}: {}", e.getMessage(), e.toString());
         return Map.of("error", e.getMessage());
     }
 }

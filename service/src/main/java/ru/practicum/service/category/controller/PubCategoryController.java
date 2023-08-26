@@ -8,6 +8,8 @@ import ru.practicum.service.category.CategoryMapper;
 import ru.practicum.service.category.dto.CategoryDto;
 import ru.practicum.service.category.service.CategoryService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,15 +22,15 @@ public class PubCategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<CategoryDto> getAllCategories(@RequestParam(defaultValue = "0", required = false) int from,
-                                              @RequestParam(defaultValue = "10", required = false) int size) {
+    public List<CategoryDto> getAllCategories(@RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                              @RequestParam(defaultValue = "10") @Positive int size) {
         log.info("{}: GET: ALL: from: {} size: {}", this.getClass().getSimpleName(), from, size);
         return categoryService.getAllCategories(from, size).stream().map(CategoryMapper::toCategoryDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{catId}")
-    public CategoryDto getCategoryById(@PathVariable Long catId) {
+    public CategoryDto getCategoryById(@PathVariable @Positive Long catId) {
         log.info("{}: GET: catId: {}", this.getClass().getSimpleName(), catId);
         return CategoryMapper.toCategoryDto(categoryService.getCategory(catId));
     }

@@ -1,5 +1,6 @@
 package ru.practicum.service.event.service;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,12 +45,6 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event addEvent(Event event) {
         return eventRepository.save(event);
-    }
-
-    @Override
-    public Event getEvent(Long eventId) {
-        return eventRepository.findById(eventId).orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId +
-                " not found"));
     }
 
     @Override
@@ -125,6 +120,9 @@ public class EventServiceImpl implements EventService {
                                             LocalDateTime rangeStart,
                                             LocalDateTime rangeEnd,
                                             int from, int size) {
+        if (rangeEnd.isBefore(rangeStart)) {
+            throw new EventDateTimeException("Start must be before end");
+        }
         Pageable pageable = PageableValidation.validatePageable(from, size);
         return eventRepository.getAllEventsForAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
     }
@@ -175,6 +173,7 @@ public class EventServiceImpl implements EventService {
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
                                                               EventRequestStatusUpdateRequest updateRequest) {
         Event event = getEvent(userId, eventId);
+        requestService.updateConfirmedRequests();
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= requestService.getConfirmedRequests(eventId)) {
             requestService.rejectOverLimitRequestEvent(eventId);
             throw new RequestValidationException("The participant limit has been reached");
@@ -213,13 +212,13 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updateEvent(Event event, UpdateEventRequest updateEventRequest) {
-        if (updateEventRequest.getAnnotation() != null && !updateEventRequest.getAnnotation().isBlank()) {
+        if (!StringUtils.isBlank(updateEventRequest.getAnnotation())) {
             event.setAnnotation(updateEventRequest.getAnnotation());
         }
         if (updateEventRequest.getCategory() != null) {
             event.setCategory(categoryService.getCategory(updateEventRequest.getCategory()));
         }
-        if (updateEventRequest.getDescription() != null && !updateEventRequest.getDescription().isBlank()) {
+        if (!StringUtils.isBlank(updateEventRequest.getDescription())) {
             event.setDescription(updateEventRequest.getDescription());
         }
         if (updateEventRequest.getEventDate() != null) {
@@ -238,8 +237,13 @@ public class EventServiceImpl implements EventService {
         if (updateEventRequest.getRequestModeration() != null) {
             event.setRequestModeration(updateEventRequest.getRequestModeration());
         }
-        if (updateEventRequest.getTitle() != null && !updateEventRequest.getTitle().isBlank()) {
+        if (!StringUtils.isBlank(updateEventRequest.getTitle())) {
             event.setTitle(updateEventRequest.getTitle());
         }
+    }
+
+    @Override
+    public boolean exist(long eventId) {
+        return eventRepository.existsById(eventId);
     }
 }

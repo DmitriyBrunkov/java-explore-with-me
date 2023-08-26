@@ -9,16 +9,19 @@ import ru.practicum.stats.dto.HitDto;
 import ru.practicum.stats.dto.HitStatsDto;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StatsService {
-    @Value("${service.app-name}")
-    private String app;
     private static final String URI_PREFIX = "/events";
     private final StatsClient statsClient;
+    @Value("${service.app-name}")
+    private String app;
 
     public void postHit(Long eventId, String ip) {
         String uri = URI_PREFIX + (eventId == null ? "" : "/" + eventId);
@@ -41,6 +44,23 @@ public class StatsService {
             return 0L;
         }
         return entity.getBody().stream().mapToLong(HitStatsDto::getHits).sum();
+    }
 
+    public Map<Long, Long> getHitsCount(Map<Long, LocalDateTime> events) {
+        if (events.isEmpty()) {
+            return new HashMap<>();
+        }
+        List<String> uris = events.keySet().stream().map(key -> "/events/" + key.toString())
+                .collect(Collectors.toList());
+        ResponseEntity<List<HitStatsDto>> entity = statsClient.getStat(
+                events.values().stream().min(LocalDateTime::compareTo).get(),
+                LocalDateTime.now(),
+                uris,
+                true);
+        Map<Long, Long> result = new HashMap<>();
+        for (HitStatsDto hitStatsDto : Objects.requireNonNull(entity.getBody())) {
+            result.put(Long.getLong(hitStatsDto.getUri().replace("/events/", "")), hitStatsDto.getHits());
+        }
+        return result;
     }
 }

@@ -15,6 +15,7 @@ import ru.practicum.service.event.dto.UpdateEventUserRequest;
 import ru.practicum.service.event.enums.EventState;
 import ru.practicum.service.event.model.Event;
 import ru.practicum.service.event.service.EventService;
+import ru.practicum.service.exception.model.ObjectNotFoundException;
 import ru.practicum.service.location.model.Location;
 import ru.practicum.service.location.service.LocationService;
 import ru.practicum.service.request.RequestMapper;
@@ -28,8 +29,9 @@ import ru.practicum.service.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -56,21 +58,29 @@ public class PrivateEventController {
         Event event = eventService.addEvent(EventMapper.toEvent(user, category, location,
                 LocalDateTime.now(), EventState.PENDING, newEventDto));
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        return EventMapper.toEventFullDto(views, event);
+        requestService.updateConfirmedRequests();
+        return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
     @GetMapping
     public List<EventShortDto> getAllEvents(@PathVariable @Positive Long userId,
-                                            @RequestParam(defaultValue = "0", required = false) int from,
-                                            @RequestParam(defaultValue = "10", required = false) int size) {
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                            @RequestParam(defaultValue = "10") @Positive int size) {
         log.info("{}: GET: ALL: userId: {} from: {} size: {}", this.getClass().getSimpleName(), userId, from, size);
-        return eventService.getEvents(userId, from, size).stream()
-                .map(event -> {
-                    EventShortDto eventShortDto =
-                            EventMapper.toEventShortDto(statsService.getHitsCount(event.getId(), event.getCreatedOn()), event);
-                    eventShortDto.setConfirmedRequests(requestService.getConfirmedRequests(eventShortDto.getId()));
-                    return eventShortDto;
-                })
+        Set<Event> events = new HashSet<>(eventService.getEvents(userId, from, size));
+        Map<Long, Long> hitsCount;
+        if (!events.isEmpty()) {
+            requestService.updateConfirmedRequests();
+            Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
+            events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
+            hitsCount = statsService.getHitsCount(eventsWithDate);
+        } else {
+            hitsCount = new HashMap<>();
+        }
+
+        return events.stream()
+                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
+                        hitsCount.get(event.getId()), event))
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +89,8 @@ public class PrivateEventController {
         log.info("{}: GET: userId: {} eventId: {}", this.getClass().getSimpleName(), userId, eventId);
         Event event = eventService.getEvent(userId, eventId);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        return EventMapper.toEventFullDto(views, event);
+        requestService.updateConfirmedRequests();
+        return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
     @PatchMapping("/{eventId}")
@@ -89,14 +100,19 @@ public class PrivateEventController {
                 userId, eventId, updateEventUserRequest);
         Event event = eventService.updateEventUser(userId, eventId, updateEventUserRequest);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        return EventMapper.toEventFullDto(views, event);
+        requestService.updateConfirmedRequests();
+        return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
     @GetMapping("/{eventId}/requests")
     public List<ParticipationRequestDto> getParticipationRequestsByUserEvents(@PathVariable @Positive Long userId, @PathVariable @Positive Long eventId) {
         log.info("{}: GET: REQUESTS: userId: {} eventId: {}", this.getClass().getSimpleName(), userId, eventId);
-        userService.getUser(userId);
-        eventService.getEvent(eventId);
+        if (!userService.exist(userId)) {
+            throw new ObjectNotFoundException("User id: " + userId + " not found");
+        }
+        if (!eventService.exist(eventId)) {
+            throw new  ObjectNotFoundException("Event: " + eventId + " not found");
+        }
         return requestService.getRequests(eventId).stream().map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
@@ -106,6 +122,12 @@ public class PrivateEventController {
                                                               @RequestBody @Valid EventRequestStatusUpdateRequest updateRequest) {
         log.info("{}: PATCH: REQUESTS: userId: {} eventId: {} updateRequest: {}", this.getClass()
                 .getSimpleName(), userId, eventId, updateRequest);
+        if (!userService.exist(userId)) {
+            throw new ObjectNotFoundException("User id: " + userId + " not found");
+        }
+        if (!eventService.exist(eventId)) {
+            throw new  ObjectNotFoundException("Event: " + eventId + " not found");
+        }
         return eventService.updateRequestStatus(userId, eventId, updateRequest);
     }
 }

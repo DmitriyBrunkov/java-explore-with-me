@@ -10,6 +10,7 @@ import ru.practicum.service.category.dto.CategoryDto;
 import ru.practicum.service.category.service.CategoryService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 @RestController
 @RequestMapping("/admin/categories")
@@ -28,13 +29,13 @@ public class AdminCategoryController {
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable Long catId) {
+    public void deleteCategory(@PathVariable @Positive Long catId) {
         log.info("{}: DELETE: catId: {}", this.getClass().getSimpleName(), catId);
         categoryService.deleteCategory(catId);
     }
 
     @PatchMapping("/{catId}")
-    public CategoryDto updateCategory(@PathVariable Long catId, @RequestBody @Valid CategoryDto categoryDto) {
+    public CategoryDto updateCategory(@PathVariable @Positive Long catId, @RequestBody @Valid CategoryDto categoryDto) {
         log.info("{}: Patch: catId: {} CategoryDto: {}", this.getClass().getSimpleName(), catId, categoryDto);
         return CategoryMapper.toCategoryDto(categoryService.updateCategory(catId,
                 CategoryMapper.toCategory(categoryDto)));

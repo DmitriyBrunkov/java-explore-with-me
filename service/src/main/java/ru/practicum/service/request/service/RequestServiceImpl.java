@@ -16,6 +16,8 @@ import ru.practicum.service.user.service.UserService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +26,26 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserService userService;
     private final EventRepository eventRepository;
+    private final Map<Long, Long> confirmedRequests = new HashMap<>();
 
     @Override
-    public Long getConfirmedRequests(Long eventId) {
+    public void updateConfirmedRequests() {
+        confirmedRequests.clear();
         List<Request> requestList = requestRepository.findAllByStatus(RequestStatus.CONFIRMED);
-        Map<Long, Long> confirmedRequests = new HashMap<>();
         for (Request request : requestList) {
             confirmedRequests.put(request.getEvent().getId(),
                     confirmedRequests.getOrDefault(request.getEvent().getId(), 0L) + 1);
         }
+    }
+
+    @Override
+    public Map<Long, Long> getConfirmedRequests(Set<Long> eventIds) {
+        return confirmedRequests.entrySet().stream().filter(entry -> eventIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public Long getConfirmedRequests(Long eventId) {
         return confirmedRequests.getOrDefault(eventId, 0L);
     }
 
@@ -77,8 +90,9 @@ public class RequestServiceImpl implements RequestService {
 
     private Request buildRequest(Long userId, Long eventId) {
         User user = userService.getUser(userId);
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId +
-                " not found"));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId +
+                        " not found"));
 
         if (event.getInitiator().equals(user)) {
             throw new RequestValidationException("Event initiator cannot add a request to participate in his own " +
@@ -89,7 +103,8 @@ public class RequestServiceImpl implements RequestService {
             throw new RequestValidationException("Can't participate in an unpublished event");
         }
 
-        Long confirmedRequests =  getConfirmedRequests(eventId);
+        updateConfirmedRequests();
+        Long confirmedRequests = getConfirmedRequests(eventId);
 
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= confirmedRequests) {
             throw new RequestValidationException("Event has reached the limit of requests for participation");

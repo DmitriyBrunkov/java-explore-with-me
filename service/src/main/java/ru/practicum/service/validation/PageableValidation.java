@@ -9,12 +9,12 @@ import ru.practicum.service.event.enums.SortType;
 @UtilityClass
 public class PageableValidation {
     public Pageable validatePageable(Integer from, Integer size) {
-        return PageRequest.of(from <= 0 ? 0 : from / size, size);
+        return PageRequest.of(from == 0 ? 0 : from / size, size);
     }
 
     public Pageable validatePageable(Integer from, Integer size, SortType sort) {
         if (sort.equals(SortType.EVENT_DATE)) {
-            return PageRequest.of(from <= 0 ? 0 : from / size, size, Sort.by("eventDate").descending());
+            return PageRequest.of(from == 0 ? 0 : from / size, size, Sort.by("eventDate").descending());
         }
         return validatePageable(from, size);
     }

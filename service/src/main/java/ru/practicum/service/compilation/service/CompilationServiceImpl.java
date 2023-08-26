@@ -1,5 +1,6 @@
 package ru.practicum.service.compilation.service;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (newCompilation.getPinned() != null) {
             compilation.setPinned(newCompilation.getPinned());
         }
-        if (newCompilation.getTitle() != null) {
+        if (!StringUtils.isBlank(newCompilation.getTitle())) {
             compilation.setTitle(newCompilation.getTitle());
         }
         return compilationRepository.save(compilation);

@@ -16,7 +16,7 @@ public class ExceptionController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleObjectNotFoundException(final ObjectNotFoundException e) {
-        log.error("{}: {}", e.getMessage(), e.getStackTrace());
+        log.error("{}: {}", e.getMessage(), e.toString());
         return ApiError.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .reason("The required object was not found")
@@ -27,7 +27,7 @@ public class ExceptionController {
     @ExceptionHandler(EventDateTimeException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequestException(final RuntimeException e) {
-        log.error("{}: {}", e.getMessage(), e.getStackTrace());
+        log.error("{}: {}", e.getMessage(), e.toString());
         return ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getMessage())
@@ -40,7 +40,7 @@ public class ExceptionController {
             ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflictException(final RuntimeException e) {
-        log.error("{}: {}", e.getMessage(), e.getStackTrace());
+        log.error("{}: {}", e.getMessage(), e.toString());
         return ApiError.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getMessage())
@@ -50,7 +50,7 @@ public class ExceptionController {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleThrowableException(final RuntimeException e) {
-        log.error("{}: {}", e.getMessage(), e.getStackTrace());
+        log.error("{}: {}", e.getMessage(), e.toString());
         return ApiError.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message(e.getMessage())

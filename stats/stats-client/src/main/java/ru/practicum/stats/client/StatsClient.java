@@ -50,6 +50,5 @@ public class StatsClient {
                 .retrieve()
                 .toEntity(HitDto.class)
                 .block();
-
     }
 }

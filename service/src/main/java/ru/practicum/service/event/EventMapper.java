@@ -26,16 +26,16 @@ public class EventMapper {
                 state, newEventDto.getTitle());
     }
 
-    public EventFullDto toEventFullDto(Long views, Event event) {
+    public EventFullDto toEventFullDto(Long confirmedRequest, Long views, Event event) {
         return new EventFullDto(event.getAnnotation(), CategoryMapper.toCategoryDto(event.getCategory()),
-                event.getCreatedOn(), event.getDescription(), event.getEventDate(), event.getId(),
+                confirmedRequest, event.getCreatedOn(), event.getDescription(), event.getEventDate(), event.getId(),
                 UserMapper.toUserShortDto(event.getInitiator()), LocationMapper.toLocationDto(event.getLocation()),
                 event.getPaid(), event.getParticipantLimit(), event.getPublishedOn(), event.getRequestModeration(),
                 event.getState(), event.getTitle(), views);
     }
 
-    public EventShortDto toEventShortDto(Long views, Event event) {
+    public EventShortDto toEventShortDto(Long confirmedRequest, Long views, Event event) {
         return new EventShortDto(event.getAnnotation(), CategoryMapper.toCategoryDto(event.getCategory()),
-                event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views);
+                confirmedRequest, event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views);
     }
 }
