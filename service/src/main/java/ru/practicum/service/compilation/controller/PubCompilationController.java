@@ -69,7 +69,6 @@ public class PubCompilationController {
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
-            events = new HashSet<>();
             hitsCount = new HashMap<>();
         }
         return CompilationMapper.toCompilationDto(compilation.getEvents().stream()
