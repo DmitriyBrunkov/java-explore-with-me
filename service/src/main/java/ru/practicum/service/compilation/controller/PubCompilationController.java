@@ -39,18 +39,21 @@ public class PubCompilationController {
         Set<Event> events = new HashSet<>();
         compilations.forEach(compilation -> events.addAll(compilation.getEvents()));
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (!events.isEmpty()) {
-            requestService.updateConfirmedRequests();
+            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
+                    .collect(Collectors.toSet()));
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
         return compilations.stream().map(compilation -> {
             Set<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                    .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
-                            hitsCount.get(event.getId()), event))
+                    .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                            hitsCount.getOrDefault(event.getId(), 0L), event))
                     .collect(Collectors.toSet());
             return CompilationMapper.toCompilationDto(eventShortDtos, compilation);
         }).collect(Collectors.toList());
@@ -62,17 +65,22 @@ public class PubCompilationController {
         Compilation compilation = compilationService.getCompilation(compId);
         Set<Event> events;
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (!compilation.getEvents().isEmpty()) {
             events = compilation.getEvents();
-            requestService.updateConfirmedRequests();
+            confirmedRequestsCount =
+                    requestService.getConfirmedRequests(events.stream().map(Event::getId)
+                            .collect(Collectors.toSet()));
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
         return CompilationMapper.toCompilationDto(compilation.getEvents().stream()
-                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()), hitsCount.get(event.getId()), event))
+                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                        hitsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toSet()), compilation);
     }
 }

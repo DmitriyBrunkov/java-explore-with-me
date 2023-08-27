@@ -50,17 +50,21 @@ public class PubEventController {
         Set<Event> events = new HashSet<>(eventService.getAllEventsForPub(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size, request.getRemoteAddr()));
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (!events.isEmpty()) {
-            requestService.updateConfirmedRequests();
+            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
+                    .collect(Collectors.toSet()));
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
 
         List<EventShortDto> resultEventShortList = events.stream()
-                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()), hitsCount.get(event.getId()), event))
+                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                hitsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toList());
         if (sort.equals(SortType.VIEWS)) {
             resultEventShortList.sort((o1, o2) -> Math.toIntExact(o2.getViews() - o1.getViews()));
@@ -74,7 +78,6 @@ public class PubEventController {
         statsService.postHit(id, request.getRemoteAddr());
         Event event = eventService.getEventForPub(id);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        requestService.updateConfirmedRequests();
         return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 }

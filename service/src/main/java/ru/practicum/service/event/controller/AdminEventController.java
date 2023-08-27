@@ -57,17 +57,20 @@ public class AdminEventController {
         Set<Event> events = new HashSet<>(eventService.getAllEventsForAdmin(users, states, categories, rangeStart, rangeEnd, from,
                 size));
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (!events.isEmpty()) {
-            requestService.updateConfirmedRequests();
+            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
+                    .collect(Collectors.toSet()));
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
         return events.stream()
-                .map(event -> EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()),
-                        hitsCount.get(event.getId()), event))
+                .map(event -> EventMapper.toEventFullDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                        hitsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +81,6 @@ public class AdminEventController {
                 .getSimpleName(), eventId, updateEventAdminRequest);
         Event event = eventService.updateEventAdmin(eventId, updateEventAdminRequest);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        requestService.updateConfirmedRequests();
         return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 }

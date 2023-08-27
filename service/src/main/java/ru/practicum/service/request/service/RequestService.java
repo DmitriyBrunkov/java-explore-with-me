@@ -13,8 +13,6 @@ public interface RequestService {
 
     Request cancelRequest(Long userId, Long requestId);
 
-    void updateConfirmedRequests();
-
     Map<Long, Long> getConfirmedRequests(Set<Long> eventIds);
 
     Long getConfirmedRequests(Long eventId);

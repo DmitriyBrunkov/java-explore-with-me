@@ -43,20 +43,22 @@ public class AdminCompilationController {
         log.info("{}: POST: NewCompilationDto: {}", this.getClass().getSimpleName(), newCompilationDto);
         Set<Event> events;
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (newCompilationDto.getEvents() != null) {
+            confirmedRequestsCount = requestService.getConfirmedRequests(newCompilationDto.getEvents());
             events = eventService.getEvents(newCompilationDto.getEvents());
-            requestService.updateConfirmedRequests();
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
-            hitsCount = new HashMap<>();
             events = new HashSet<>();
+            hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
         Compilation compilation = compilationService.addCompilation(CompilationMapper.toCompilation(events, newCompilationDto));
         return CompilationMapper.toCompilationDto(events.stream()
-                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
-                        hitsCount.get(event.getId()), event)).collect(Collectors.toSet()), compilation);
+                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                        hitsCount.getOrDefault(event.getId(), 0L), event)).collect(Collectors.toSet()), compilation);
     }
 
     @DeleteMapping("/{compId}")
@@ -73,20 +75,22 @@ public class AdminCompilationController {
                 newCompilationDto);
         Set<Event> events;
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (newCompilationDto.getEvents() != null) {
+            confirmedRequestsCount = requestService.getConfirmedRequests(newCompilationDto.getEvents());
             events = eventService.getEvents(newCompilationDto.getEvents());
-            requestService.updateConfirmedRequests();
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             events = new HashSet<>();
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
         Compilation compilation = compilationService.updateCompilation(compId, CompilationMapper.toCompilation(events,
                 newCompilationDto));
         return CompilationMapper.toCompilationDto(events.stream()
-                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
-                        hitsCount.get(event.getId()), event)).collect(Collectors.toSet()), compilation);
+                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                        hitsCount.getOrDefault(event.getId(), 0L), event)).collect(Collectors.toSet()), compilation);
     }
 }

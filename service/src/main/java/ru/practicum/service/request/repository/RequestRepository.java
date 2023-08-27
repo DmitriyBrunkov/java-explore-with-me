@@ -9,9 +9,21 @@ import ru.practicum.service.request.model.Request;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> findAllByStatus(RequestStatus status);
+
+    @Query("select count(*) from Request r " +
+            "where r.status = :status " +
+            "and r.event.id = :eventId ")
+    Long getCountConfirmedRequestsByEvent(RequestStatus status, Long eventId);
+
+    @Query("select r.event.id, count(*) " +
+            "from Request r " +
+            "where r.status = :status " +
+            "and r.event.id in :eventIds " +
+            "group by r.event.id")
+    List<Object[]> getCountConfirmedRequestsByEvents(RequestStatus status, Set<Long> eventIds);
 
     List<Request> findAllByRequester_Id(Long requesterId);
 

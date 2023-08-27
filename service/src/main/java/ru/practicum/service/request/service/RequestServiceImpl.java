@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,27 +25,20 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserService userService;
     private final EventRepository eventRepository;
-    private final Map<Long, Long> confirmedRequests = new HashMap<>();
-
-    @Override
-    public void updateConfirmedRequests() {
-        confirmedRequests.clear();
-        List<Request> requestList = requestRepository.findAllByStatus(RequestStatus.CONFIRMED);
-        for (Request request : requestList) {
-            confirmedRequests.put(request.getEvent().getId(),
-                    confirmedRequests.getOrDefault(request.getEvent().getId(), 0L) + 1);
-        }
-    }
 
     @Override
     public Map<Long, Long> getConfirmedRequests(Set<Long> eventIds) {
-        return confirmedRequests.entrySet().stream().filter(entry -> eventIds.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Long, Long> results = new HashMap<>();
+        List<Object[]> resultList = requestRepository.getCountConfirmedRequestsByEvents(RequestStatus.CONFIRMED, eventIds);
+        for (Object[] resultType : resultList) {
+            results.put((Long) resultType[0], (Long) resultType[1]);
+        }
+        return results;
     }
 
     @Override
     public Long getConfirmedRequests(Long eventId) {
-        return confirmedRequests.getOrDefault(eventId, 0L);
+        return requestRepository.getCountConfirmedRequestsByEvent(RequestStatus.CONFIRMED, eventId);
     }
 
     @Override
@@ -103,7 +95,6 @@ public class RequestServiceImpl implements RequestService {
             throw new RequestValidationException("Can't participate in an unpublished event");
         }
 
-        updateConfirmedRequests();
         Long confirmedRequests = getConfirmedRequests(eventId);
 
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= confirmedRequests) {

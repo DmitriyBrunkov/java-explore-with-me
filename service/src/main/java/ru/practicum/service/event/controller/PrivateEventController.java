@@ -58,7 +58,6 @@ public class PrivateEventController {
         Event event = eventService.addEvent(EventMapper.toEvent(user, category, location,
                 LocalDateTime.now(), EventState.PENDING, newEventDto));
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        requestService.updateConfirmedRequests();
         return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
@@ -69,18 +68,21 @@ public class PrivateEventController {
         log.info("{}: GET: ALL: userId: {} from: {} size: {}", this.getClass().getSimpleName(), userId, from, size);
         Set<Event> events = new HashSet<>(eventService.getEvents(userId, from, size));
         Map<Long, Long> hitsCount;
+        Map<Long, Long> confirmedRequestsCount;
         if (!events.isEmpty()) {
-            requestService.updateConfirmedRequests();
+            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
+                    .collect(Collectors.toSet()));
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
         } else {
             hitsCount = new HashMap<>();
+            confirmedRequestsCount = new HashMap<>();
         }
 
         return events.stream()
-                .map(event -> EventMapper.toEventShortDto(requestService.getConfirmedRequests(event.getId()),
-                        hitsCount.get(event.getId()), event))
+                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                        hitsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toList());
     }
 
@@ -89,7 +91,6 @@ public class PrivateEventController {
         log.info("{}: GET: userId: {} eventId: {}", this.getClass().getSimpleName(), userId, eventId);
         Event event = eventService.getEvent(userId, eventId);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        requestService.updateConfirmedRequests();
         return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
@@ -100,7 +101,6 @@ public class PrivateEventController {
                 userId, eventId, updateEventUserRequest);
         Event event = eventService.updateEventUser(userId, eventId, updateEventUserRequest);
         Long views = statsService.getHitsCount(event.getId(), event.getCreatedOn());
-        requestService.updateConfirmedRequests();
         return EventMapper.toEventFullDto(requestService.getConfirmedRequests(event.getId()), views, event);
     }
 
@@ -111,7 +111,7 @@ public class PrivateEventController {
             throw new ObjectNotFoundException("User id: " + userId + " not found");
         }
         if (!eventService.exist(eventId)) {
-            throw new  ObjectNotFoundException("Event: " + eventId + " not found");
+            throw new ObjectNotFoundException("Event: " + eventId + " not found");
         }
         return requestService.getRequests(eventId).stream().map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
@@ -126,7 +126,7 @@ public class PrivateEventController {
             throw new ObjectNotFoundException("User id: " + userId + " not found");
         }
         if (!eventService.exist(eventId)) {
-            throw new  ObjectNotFoundException("Event: " + eventId + " not found");
+            throw new ObjectNotFoundException("Event: " + eventId + " not found");
         }
         return eventService.updateRequestStatus(userId, eventId, updateRequest);
     }

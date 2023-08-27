@@ -53,7 +53,7 @@ public class StatsService {
         List<String> uris = events.keySet().stream().map(key -> "/events/" + key.toString())
                 .collect(Collectors.toList());
         ResponseEntity<List<HitStatsDto>> entity = statsClient.getStat(
-                events.values().stream().min(LocalDateTime::compareTo).get(),
+                events.values().stream().min(LocalDateTime::compareTo).orElse(LocalDateTime.now().minusSeconds(1)),
                 LocalDateTime.now(),
                 uris,
                 true);
