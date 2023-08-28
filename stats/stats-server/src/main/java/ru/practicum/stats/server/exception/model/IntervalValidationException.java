@@ -1,4 +1,4 @@
-package ru.practicum.stats.server.exception;
+package ru.practicum.stats.server.exception.model;
 
 public class IntervalValidationException extends RuntimeException {
     public IntervalValidationException(String message) {

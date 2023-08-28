@@ -1,45 +1,54 @@
 package ru.practicum.stats.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.stats.dto.HitDto;
+import ru.practicum.stats.dto.HitStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Service
-public class StatsClient extends BaseClient {
+public class StatsClient {
 
-    private static final DateTimeFormatter DATE_TIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
+    private final WebClient webClient;
 
-    @Autowired
     public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
-        super(
-                builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                        .requestFactory(HttpComponentsClientHttpRequestFactory::new)
-                        .build()
-        );
+        webClient = WebClient.builder()
+                .baseUrl(serverUrl)
+                .build();
     }
 
-    public ResponseEntity<Object> postHit(HitDto hitDto) {
-        return post("/hit", hitDto);
+    public ResponseEntity<List<HitStatsDto>> getStat(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+        return webClient.get()
+                .uri(UriComponentsBuilder
+                        .fromUriString("/stats")
+                        .queryParam("start", start.format(DATE_TIME_FORMATTER))
+                        .queryParam("end", end.format(DATE_TIME_FORMATTER))
+                        .queryParam("uris", String.join(", ", uris))
+                        .queryParam("unique", unique)
+                        .build().toUriString())
+                .retrieve()
+                .toEntityList(HitStatsDto.class)
+                .block();
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        Map<String, Object> parameters = Map.of(
-                "start", start.format(DATE_TIME_PATTERN),
-                "end", end.format(DATE_TIME_PATTERN),
-                "uris", String.join(", ", uris),
-                "unique", unique
-        );
-        return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+    public ResponseEntity<HitDto> hitStat(HitDto hitDto) {
+        return webClient.post()
+                .uri("/hit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(hitDto))
+                .retrieve()
+                .toEntity(HitDto.class)
+                .block();
     }
 }
