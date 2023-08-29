@@ -202,7 +202,7 @@
                   "});\r",
                   "\r",
                   "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
-                  "    pm.expect(target[0].id).equal(pm.collectionVariables.get(\"commid\"));\r",
+                  "    pm.expect(target[0].id).to.eql(pm.collectionVariables.get(\"commid\"));\r",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -415,7 +415,7 @@
                   "const commentId = pm.collectionVariables.get('commid');\r",
                   "\r",
                   "pm.test(\"Комментарий должен быть найден до выполнения запроса\", function(){    \r",
-                  "    pm.expect(source.id).to.eql(commentId);\r",
+                  "    pm.expect(source.id).to.eql(pm.collectionVariables.get('commid'));\r",
                   "});\r",
                   "let body\r",
                   "const req = {\r",
