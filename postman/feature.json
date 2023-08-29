@@ -412,11 +412,12 @@
                   "});\r",
                   "\r",
                   "const source = pm.collectionVariables.get('response');\r",
+                  "const chkcommid = pm.collectionVariables.get('commid');\r",
                   "\r",
                   "pm.test(\"Комментарий должен быть найден до выполнения запроса\", function(){    \r",
-                  "    pm.expect(source.id).to.eql(source.id);\r",
+                  "    pm.expect(source.id).to.eql(chkcommid);\r",
                   "});\r",
-                  "let body\r",
+                  "let body;\r",
                   "const req = {\r",
                   "                url: \"http://localhost:8080/admin/comments/\" + pm.collectionVariables.get(\"commid\"),\r",
                   "                method: \"GET\",\r",
@@ -427,7 +428,7 @@
                   "    pm.test(\"Комментарий должен быть удалён после выполнения запроса\", function(){\r",
                   "        pm.expect(response.json()).not.to.eql(source);\r",
                   "    });\r",
-                  "})"
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -857,7 +858,7 @@
                   "});\r",
                   "\r",
                   "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
-                  "    pm.expect(target[2].id).equal(pm.collectionVariables.get(\"commid\"));\r",
+                  "    pm.expect(target[2].id).equal(parseInt(pm.collectionVariables.get(\"commid\")));\r",
                   "});"
                 ],
                 "type": "text/javascript"
