@@ -1340,8 +1340,8 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());                \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
-                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
-                  "        pm.collectionVariables.set(\"eid\", event.id);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
                   "        for (let i = 0; i < 11; i++){\r",
                   "            await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        }\r",
@@ -1401,7 +1401,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/events/:eventId/comments",
               "host": [
@@ -1411,6 +1417,18 @@
                 "events",
                 ":eventId",
                 "comments"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "0",
+                  "disabled": true
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "disabled": true
+                }
               ],
               "variable": [
                 {
