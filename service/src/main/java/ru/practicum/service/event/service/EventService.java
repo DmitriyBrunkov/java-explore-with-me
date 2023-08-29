@@ -20,6 +20,8 @@ public interface EventService {
 
     Event getEvent(Long userId, Long eventId);
 
+    Event getEvent(Long eventId);
+
     Event updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
     Event updateEventUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
