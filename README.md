@@ -67,4 +67,4 @@ API разделено на 3 части:
 * **Публичная:**
     * /events/{eventId}/comments GET - Получение комментариев события
 
-[Ссылка на PR]()
+[Ссылка на PR](https://github.com/DmitriyBrunkov/java-explore-with-me/pull/6)
