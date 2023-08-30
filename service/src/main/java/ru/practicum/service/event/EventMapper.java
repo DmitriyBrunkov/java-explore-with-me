@@ -34,8 +34,9 @@ public class EventMapper {
                 event.getState(), event.getTitle(), views);
     }
 
-    public EventShortDto toEventShortDto(Long confirmedRequest, Long views, Event event) {
+    public EventShortDto toEventShortDto(Long confirmedRequest, Long views, Long commentsCount, Event event) {
         return new EventShortDto(event.getAnnotation(), CategoryMapper.toCategoryDto(event.getCategory()),
-                confirmedRequest, event.getEventDate(), event.getId(), UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views);
+                confirmedRequest, event.getEventDate(), event.getId(),
+                UserMapper.toUserShortDto(event.getInitiator()), event.getPaid(), event.getTitle(), views, commentsCount);
     }
 }

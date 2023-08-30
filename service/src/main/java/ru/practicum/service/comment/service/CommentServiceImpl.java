@@ -6,13 +6,17 @@ import org.springframework.stereotype.Service;
 import ru.practicum.service.comment.dto.NewCommentDto;
 import ru.practicum.service.comment.model.Comment;
 import ru.practicum.service.comment.repository.CommentsRepository;
+import ru.practicum.service.event.enums.EventState;
 import ru.practicum.service.event.service.EventService;
 import ru.practicum.service.exception.model.ObjectNotFoundException;
 import ru.practicum.service.exception.model.RequestValidationException;
 import ru.practicum.service.validation.PageableValidation;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +56,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment addComment(Comment comment) {
+        if (!comment.getEvent().getState().equals(EventState.PUBLISHED)) {
+            throw new RequestValidationException("User can comment only published events");
+        }
         return commentsRepository.save(comment);
     }
 
@@ -61,6 +68,9 @@ public class CommentServiceImpl implements CommentService {
                 "Comment: " + commentId + " not found"));
         if (!userId.equals(comment.getAuthor().getId())) {
             throw new RequestValidationException("User can edit only his own comments");
+        }
+        if (comment.getLastChange().plusHours(1).isBefore(LocalDateTime.now())) {
+            throw new RequestValidationException("User can edit comment only within 1 hour");
         }
         comment.setText(newCommentDto.getText());
         comment.setIsModified(true);
@@ -85,5 +95,23 @@ public class CommentServiceImpl implements CommentService {
         }
         Pageable pageable = PageableValidation.validatePageable(from, size);
         return commentsRepository.findAllByEvent_IdOrderByLastChange(eventId, pageable);
+    }
+
+    @Override
+    public Long getCommentsCount(Long eventId) {
+        if (!eventService.exist(eventId)) {
+            throw new ObjectNotFoundException("Event: " + eventId + " not found");
+        }
+        return commentsRepository.countAllByEvent_Id(eventId);
+    }
+
+    @Override
+    public Map<Long, Long> getCommentsCount(Set<Long> eventIds) {
+        Map<Long, Long> results = new HashMap<>();
+        List<Object[]> resultList = commentsRepository.countAllByEventIdsIn(eventIds);
+        for (Object[] resultType : resultList) {
+            results.put((Long) resultType[0], (Long) resultType[1]);
+        }
+        return results;
     }
 }

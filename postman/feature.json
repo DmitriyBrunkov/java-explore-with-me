@@ -25,6 +25,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);\r",
                   "        comment = rnd.getComment();\r",
@@ -149,6 +150,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);        \r",
@@ -247,6 +249,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
@@ -374,6 +377,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        const foundComment = await api.findComment(comment.id);        \r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
@@ -495,6 +499,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);        \r",
@@ -589,6 +594,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
@@ -705,6 +711,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        const foundComment = await api.findComment(comment.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
@@ -811,6 +818,7 @@
                   "        const user2 = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        await api.addComment(user1.id, event.id, rnd.getComment());\r",
                   "        const comment2 = await api.addComment(user2.id, event.id, rnd.getComment());\r",
@@ -917,6 +925,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);\r",
                   "        comment = rnd.getComment();\r",
@@ -1027,6 +1036,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);\r",
                   "        comment = rnd.getComment();\r",
@@ -1136,6 +1146,7 @@
                   "        const user = await api.addUser(rnd.getUser());        \r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());        \r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
@@ -1242,6 +1253,7 @@
                   "        const user = await api.addUser(rnd.getUser());        \r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());        \r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
@@ -1348,6 +1360,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());                \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        pm.collectionVariables.set('uid', user.id);\r",
                   "        pm.collectionVariables.set('eid', event.id);\r",
                   "        for (let i = 0; i < 11; i++){\r",
@@ -1463,6 +1476,7 @@
                   "        const user = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());                \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);\r",
                   "        for (let i = 0; i < 11; i++){\r",
@@ -1566,6 +1580,7 @@
                   "        const user1 = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        const foundComment = await api.findComment(comment.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user1.id);\r",
@@ -1659,6 +1674,7 @@
                   "        const user1 = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event.id);\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user1.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
@@ -1744,6 +1760,114 @@
                 {
                   "key": "commentId",
                   "value": "{{commid}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Post comment on upublished event",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    let comment;\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());        \r",
+                  "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));        \r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "        pm.collectionVariables.set(\"eid\", event.id);\r",
+                  "        comment = rnd.getComment();\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(comment),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{request_body}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:userId/events/:eventId/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "comments"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}"
                 }
               ]
             }
