@@ -61,6 +61,12 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Event getEvent(Long eventId) {
+        return eventRepository.findById(eventId).orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId +
+                " not found"));
+    }
+
+    @Override
     public Event updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event: " + eventId + " not found"));

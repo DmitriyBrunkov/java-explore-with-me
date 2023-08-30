@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.service.comment.service.CommentService;
 import ru.practicum.service.event.EventMapper;
 import ru.practicum.service.event.dto.EventFullDto;
 import ru.practicum.service.event.dto.EventShortDto;
@@ -32,6 +33,7 @@ public class PubEventController {
     private final EventService eventService;
     private final StatsService statsService;
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping
     public List<EventShortDto> getAllEvents(@RequestParam(required = false) String text,
@@ -51,20 +53,23 @@ public class PubEventController {
                 onlyAvailable, sort, from, size, request.getRemoteAddr()));
         Map<Long, Long> hitsCount;
         Map<Long, Long> confirmedRequestsCount;
+        Map<Long, Long> commentsCount;
         if (!events.isEmpty()) {
-            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
-                    .collect(Collectors.toSet()));
+            Set<Long> eventsSet = events.stream().map(Event::getId).collect(Collectors.toSet());
+            confirmedRequestsCount = requestService.getConfirmedRequests(eventsSet);
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
+            commentsCount = commentService.getCommentsCount(eventsSet);
         } else {
             hitsCount = new HashMap<>();
             confirmedRequestsCount = new HashMap<>();
+            commentsCount = new HashMap<>();
         }
 
         List<EventShortDto> resultEventShortList = events.stream()
                 .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
-                hitsCount.getOrDefault(event.getId(), 0L), event))
+                        hitsCount.getOrDefault(event.getId(), 0L), commentsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toList());
         if (sort.equals(SortType.VIEWS)) {
             resultEventShortList.sort((o1, o2) -> Math.toIntExact(o2.getViews() - o1.getViews()));

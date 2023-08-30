@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.service.comment.service.CommentService;
 import ru.practicum.service.compilation.CompilationMapper;
 import ru.practicum.service.compilation.dto.CompilationDto;
 import ru.practicum.service.compilation.dto.NewCompilationDto;
@@ -35,6 +36,7 @@ public class AdminCompilationController {
     private final EventService eventService;
     private final StatsService statsService;
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,21 +46,26 @@ public class AdminCompilationController {
         Set<Event> events;
         Map<Long, Long> hitsCount;
         Map<Long, Long> confirmedRequestsCount;
+        Map<Long, Long> commentsCount;
         if (newCompilationDto.getEvents() != null) {
             confirmedRequestsCount = requestService.getConfirmedRequests(newCompilationDto.getEvents());
             events = eventService.getEvents(newCompilationDto.getEvents());
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
+            commentsCount = commentService.getCommentsCount(newCompilationDto.getEvents());
         } else {
             events = new HashSet<>();
             hitsCount = new HashMap<>();
             confirmedRequestsCount = new HashMap<>();
+            commentsCount = new HashMap<>();
         }
         Compilation compilation = compilationService.addCompilation(CompilationMapper.toCompilation(events, newCompilationDto));
         return CompilationMapper.toCompilationDto(events.stream()
-                .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
-                        hitsCount.getOrDefault(event.getId(), 0L), event)).collect(Collectors.toSet()), compilation);
+                        .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
+                                hitsCount.getOrDefault(event.getId(), 0L), commentsCount.getOrDefault(event.getId(), 0L),
+                                event)).collect(Collectors.toSet()),
+                compilation);
     }
 
     @DeleteMapping("/{compId}")
@@ -76,21 +83,25 @@ public class AdminCompilationController {
         Set<Event> events;
         Map<Long, Long> hitsCount;
         Map<Long, Long> confirmedRequestsCount;
+        Map<Long, Long> commentsCount;
         if (newCompilationDto.getEvents() != null) {
             confirmedRequestsCount = requestService.getConfirmedRequests(newCompilationDto.getEvents());
             events = eventService.getEvents(newCompilationDto.getEvents());
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
+            commentsCount = commentService.getCommentsCount(newCompilationDto.getEvents());
         } else {
             events = new HashSet<>();
             hitsCount = new HashMap<>();
             confirmedRequestsCount = new HashMap<>();
+            commentsCount = new HashMap<>();
         }
         Compilation compilation = compilationService.updateCompilation(compId, CompilationMapper.toCompilation(events,
                 newCompilationDto));
         return CompilationMapper.toCompilationDto(events.stream()
                 .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
-                        hitsCount.getOrDefault(event.getId(), 0L), event)).collect(Collectors.toSet()), compilation);
+                        hitsCount.getOrDefault(event.getId(), 0L), commentsCount.getOrDefault(event.getId(), 0L), event))
+                .collect(Collectors.toSet()), compilation);
     }
 }

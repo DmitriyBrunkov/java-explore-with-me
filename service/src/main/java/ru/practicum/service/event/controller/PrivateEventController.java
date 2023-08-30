@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.category.model.Category;
 import ru.practicum.service.category.service.CategoryService;
+import ru.practicum.service.comment.service.CommentService;
 import ru.practicum.service.event.EventMapper;
 import ru.practicum.service.event.dto.EventFullDto;
 import ru.practicum.service.event.dto.EventShortDto;
@@ -46,6 +47,7 @@ public class PrivateEventController {
     private final LocationService locationService;
     private final RequestService requestService;
     private final StatsService statsService;
+    private final CommentService commentService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -69,20 +71,23 @@ public class PrivateEventController {
         Set<Event> events = new HashSet<>(eventService.getEvents(userId, from, size));
         Map<Long, Long> hitsCount;
         Map<Long, Long> confirmedRequestsCount;
+        Map<Long, Long> commentsCount;
         if (!events.isEmpty()) {
-            confirmedRequestsCount = requestService.getConfirmedRequests(events.stream().map(Event::getId)
-                    .collect(Collectors.toSet()));
+            Set<Long> eventsSet = events.stream().map(Event::getId).collect(Collectors.toSet());
+            confirmedRequestsCount = requestService.getConfirmedRequests(eventsSet);
             Map<Long, LocalDateTime> eventsWithDate = new HashMap<>();
             events.forEach(event -> eventsWithDate.put(event.getId(), event.getCreatedOn()));
             hitsCount = statsService.getHitsCount(eventsWithDate);
+            commentsCount = commentService.getCommentsCount(eventsSet);
         } else {
             hitsCount = new HashMap<>();
             confirmedRequestsCount = new HashMap<>();
+            commentsCount = new HashMap<>();
         }
 
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(confirmedRequestsCount.getOrDefault(event.getId(), 0L),
-                        hitsCount.getOrDefault(event.getId(), 0L), event))
+                        hitsCount.getOrDefault(event.getId(), 0L), commentsCount.getOrDefault(event.getId(), 0L), event))
                 .collect(Collectors.toList());
     }
 
