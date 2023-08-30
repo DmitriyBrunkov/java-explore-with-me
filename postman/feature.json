@@ -379,8 +379,8 @@
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
                   "        pm.collectionVariables.set(\"commid\", comment.id);   \r",
-                  "        pm.collectionVariables.set('response', foundComment);       \r",
-                  "        console.info(pm.collectionVariables.get('response')); \r",
+                  "        pm.collectionVariables.set(\"response\", foundComment);       \r",
+                  "        pm.collectionVariables.set(\"found\", foundComment.id);               \r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
@@ -412,14 +412,11 @@
                   "    pm.response.to.have.status(204);\r",
                   "});\r",
                   "\r",
-                  "console.info(pm.collectionVariables.get('response'));\r",
                   "const source = pm.collectionVariables.get('response');\r",
                   "const chkcommid = pm.collectionVariables.get('commid');\r",
                   "\r",
-                  "pm.test(\"Комментарий должен быть найден до выполнения запроса\", function(){   \r",
-                  "    const source = pm.collectionVariables.get('response'); \r",
-                  "    console.info(source);\r",
-                  "    pm.expect(source.id).to.eql(parseInt(chkcommid));\r",
+                  "pm.test(\"Комментарий должен быть найден до выполнения запроса\", function(){           \r",
+                  "    pm.expect(pm.collectionVariables.get('found')).to.eql(parseInt(chkcommid));\r",
                   "});\r",
                   "let body;\r",
                   "const req = {\r",
@@ -430,7 +427,7 @@
                   "            };\r",
                   "pm.sendRequest(req, (error, response) => {\r",
                   "    pm.test(\"Комментарий должен быть удалён после выполнения запроса\", function(){\r",
-                  "        pm.expect(response.json()).not.to.eql(source);\r",
+                  "        pm.expect(response.json().status).to.eql(\"NOT_FOUND\");\r",
                   "    });\r",
                   "});"
                 ],
@@ -440,7 +437,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/users/:userId/events/:eventId/comments/:commentId",
               "host": [
@@ -703,11 +706,11 @@
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
-                  "        const foundedComment = await api.findComment(comment.id);\r",
+                  "        const foundComment = await api.findComment(comment.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
                   "        pm.collectionVariables.set(\"commid\", comment.id);   \r",
-                  "        pm.collectionVariables.set(\"response\", foundedComment);\r",
+                  "        pm.collectionVariables.set(\"response\", foundComment);\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
@@ -807,8 +810,8 @@
                   "        const user2 = await api.addUser(rnd.getUser());\r",
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
-                  "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
-                  "        const comment1 = await api.addComment(user1.id, event.id, rnd.getComment());\r",
+                  "        await api.addComment(user.id, event.id, rnd.getComment());\r",
+                  "        await api.addComment(user1.id, event.id, rnd.getComment());\r",
                   "        const comment2 = await api.addComment(user2.id, event.id, rnd.getComment());\r",
                   "        pm.collectionVariables.set(\"uid\", user2.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);        \r",
@@ -1563,11 +1566,11 @@
                   "        const category = await api.addCategory(rnd.getCategory());        \r",
                   "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
                   "        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
-                  "        const foundedComment = await api.findComment(comment.id);\r",
+                  "        const foundComment = await api.findComment(comment.id);\r",
                   "        pm.collectionVariables.set(\"uid\", user1.id);\r",
                   "        pm.collectionVariables.set(\"eid\", event.id);      \r",
                   "        pm.collectionVariables.set(\"commid\", comment.id);   \r",
-                  "        pm.collectionVariables.set(\"response\", foundedComment);\r",
+                  "        pm.collectionVariables.set(\"response\", foundComment);\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
@@ -2069,6 +2072,11 @@
     {
       "key": "commid",
       "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "found",
+      "value": "",
       "type": "string"
     }
   ]
